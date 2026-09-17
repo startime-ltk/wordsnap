@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">词拍 WordSnap</string>
+    <string name="auto_answer_desc">识屏答题的自动作答模块。默认关闭：只有当你在「算法实验台」里打开总开关、并填写目标 App 包名后，它才会在那些 App 里替你点选答案。</string>
+</resources>

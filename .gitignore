@@ -1,0 +1,23 @@
+# ---- Gradle 构建产物 ----
+.gradle/
+build/
+app/build/
+
+# ---- 本机专属配置（含本机 SDK 路径），不要进仓库 ----
+local.properties
+
+# ---- 签名证书：只在本地保留 + 备份在 F:\_tools\keystore\
+# 注意：证书绝不能进公开仓库，否则别人可以签出「能覆盖安装」的假包
+*.jks
+*.keystore
+
+# ---- 安装包不放源码仓库（统一放 startime-ltk/apk）----
+*.apk
+
+# ---- IDE ----
+.idea/
+*.iml
+.DS_Store
+
+# ---- 临时目录 ----
+_syn/

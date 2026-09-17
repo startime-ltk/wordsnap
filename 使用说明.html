@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>词拍 WordSnap · 编译与实测说明 v1.1</title>
+<style>
+  :root{ --bg:#f6f7f9; --card:#fff; --line:#e3e6ea; --main:#1f2328; --sub:#6b7280; --blue:#1565c0; --green:#1b8a4b; --red:#c0392b; }
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--bg);color:var(--main);
+       font:15px/1.7 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:24px;margin:0 0 6px}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:20px}
+  h2{font-size:18px;margin:28px 0 10px;padding-left:10px;border-left:4px solid var(--blue)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  code{background:#eef1f4;padding:2px 6px;border-radius:4px;font-size:13px}
+  pre{background:#1f2328;color:#e6edf3;padding:14px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.6}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+  th{background:#f0f2f5}
+  .ok{color:var(--green);font-weight:600}
+  .warn{color:var(--red);font-weight:600}
+  ul{margin:8px 0 8px 20px;padding:0}
+  li{margin:4px 0}
+  .tag{display:inline-block;background:#e8f0fe;color:var(--blue);border-radius:20px;padding:2px 10px;font-size:12px;margin-right:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>词拍 WordSnap · 编译与实测说明</h1>
+  <div class="meta">版本 v1.2（release 正式签名包，含识屏答题引擎）&nbsp;|&nbsp; 2026-09-16 &nbsp;|&nbsp; 工程路径：<code>F:\workbuddy工作空间\2026-09-16-12-04-38\WordSnap</code></div>
+
+  <div class="card">
+    <span class="tag">已编译好的 APK</span>
+    <p style="margin:8px 0 0">
+      <b>用这个：</b><code>WordSnap\词拍WordSnap-v1.2-答题引擎.apk</code>
+      —— <b>14.92 MB</b>，正式签名，只含 arm64 架构。<br>
+      <b>手机下载直链（统一 APK 仓库 startime-ltk/apk）：</b>
+      <a href="https://github.com/startime-ltk/apk/releases/download/wordsnap-v1.2/WordSnap-v1.2.apk">https://github.com/startime-ltk/apk/releases/download/wordsnap-v1.2/WordSnap-v1.2.apk</a>
+      <br>手机上打开 GitHub App → 我的仓库 <code>apk</code> → 首页表格点「下载」，或进 Releases 点文件名。
+      SHA256 与本地包一致：<code>2b28dbba4ddf1861ef5f8c63f82745e336fd796444df2d100bb019ee904e87cb</code><br>
+      用 QQ / 微信文件传输助手传到手机，点开安装即可，不用开 Android Studio。<br>
+      <span class="warn">注意</span>：如果这个手机上装过之前的 debug 版（44 MB 那个），<b>必须先卸载再装</b>——两个包签名不同，直接覆盖会失败。<br>
+      装不上？vivo 会提示"未知来源"，在弹窗里点「继续安装 → 允许本次安装」，并在设置里给「允许安装未知应用」权限。
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="tag">体积是怎么从 44 MB 降到 14.91 MB 的</span>
+    <p style="margin:8px 0 0">
+      debug 包把 4 种 CPU 架构（arm64 / armv7 / x86 / x86_64）的 OCR 原生库全打进去了，而手机只需要其中一种。
+      在 <code>app/build.gradle</code> 里加了 <code>ndk { abiFilters 'arm64-v8a' }</code>，再改打 release 包，体积直接掉三分之二。
+      2018 年以后的安卓机基本都是 arm64；万一遇到真装不上的老 32 位机，把那行注释掉重打一个全架构包就行。
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="tag">签名证书（重要，别丢）</span>
+    <p style="margin:8px 0 0">
+      文件：<code>WordSnap\wordsnap-release.jks</code>　别名 <code>wordsnap</code>　口令 <code>ws2026apk</code>　有效期 30 年。<br>
+      <span class="warn">丢了它，以后新版本的 APK 就无法覆盖安装</span>，用户只能卸载重装、生词本和训练记录全没。建议复制一份到网盘或 U 盘。
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="tag">这是什么</span>
+    <p style="margin:8px 0 0">由原「百词斩自动答题」工程改造而来：<b>保留</b> 截屏 → 端侧 OCR → 本地词库查词 全链路，<b>删除</b> 无障碍模拟点击环节，改为「识词给你看 + 计时训练练反应」。全程离线，不联网、不替你作答。</p>
+  </div>
+
+  <h2>一、环境准备</h2>
+  <div class="card">
+    <table>
+      <tr><th>项</th><th>要求</th><th>说明</th></tr>
+      <tr><td>Android Studio</td><td>Ladybug 或更新</td><td>自带 JDK 17 即可</td></tr>
+      <tr><td>Gradle</td><td>8.9</td><td>已写在 <code>gradle-wrapper.properties</code>，首次打开会自动下载</td></tr>
+      <tr><td>AGP</td><td>8.7.3</td><td>写在根 <code>build.gradle</code></td></tr>
+      <tr><td>compileSdk / targetSdk</td><td>36 / 35</td><td>minSdk 26；本机 SDK 只有 API 36，故 compileSdk 用 36（gradle.properties 里加了 suppress 开关）</td></tr>
+      <tr><td>JDK</td><td>21</td><td class="warn">不能用 AS 自带的 JDK 25，Gradle 8.9 不支持</td></tr>
+      <tr><td>唯一三方依赖</td><td><code>com.google.mlkit:text-recognition:16.0.1</code></td><td>拉丁脚本模型打包进 APK，<b>完全离线</b>，国内可用</td></tr>
+    </table>
+  </div>
+
+  <h2>二、编译步骤</h2>
+  <div class="card">
+    <ol style="margin:6px 0 0 20px;padding:0">
+      <li>Android Studio → <b>File → Open</b> → 选择 <code>WordSnap</code> 文件夹（不是 app 目录）。</li>
+      <li>等 Gradle Sync 完成（首次约 3–10 分钟，需联网下 ML Kit 依赖）。</li>
+      <li>vivo X200 Pro 开开发者选项 + USB 调试，USB 连电脑，右上角选设备点 ▶ Run。</li>
+      <li>若报 <code>SDK location not found</code>：在项目根目录建 <code>local.properties</code>，写一行<br>
+        <code>sdk.dir=C\:\\Users\\25323\\AppData\\Local\\Android\\Sdk</code>（改成你自己的 SDK 路径，注意双反斜杠）。</li>
+    </ol>
+  </div>
+
+  <h2>三、首次运行的授权</h2>
+  <div class="card">
+    <ul>
+      <li><b>通知权限</b>：Android 13+ 启动即弹，允许（否则后台服务起不来）。</li>
+      <li><b>悬浮窗</b>：点「开始截屏识词」会跳到授权页，打开开关后返回。<span class="ok">给了 → 结果卡片直接贴屏幕顶部</span>；<span class="warn">不给 → 结果走通知栏，点通知查看</span>。</li>
+      <li><b>截屏授权</b>：每次点「开始截屏识词」会弹系统确认框，点「立即开始」。</li>
+      <li><b class="warn">vivo/OriginOS 必做</b>：i 管家 → 应用管理 → 词拍 → 打开「后台高耗电」「自启动」，并锁后台。否则服务会被系统杀掉。</li>
+    </ul>
+  </div>
+
+  <h2>四、实测清单（按这个顺序测）</h2>
+  <div class="card">
+    <table>
+      <tr><th>#</th><th>测什么</th><th>预期结果</th><th>不通过时看这里</th></tr>
+      <tr>
+        <td>1</td><td>主界面词库状态</td>
+        <td>显示「词库：约 140 条（内置样例）」</td>
+        <td>0 条 → 检查 assets/cet4.csv 是否被打进 APK（Build → Clean → Rebuild）</td>
+      </tr>
+      <tr>
+        <td>2</td><td>词库状态（v1.1 起已内置）</td>
+        <td>显示「词库：4543 条（内置样例）」，<b>不用手动导入</b></td>
+        <td>要换词库：点「导入完整四级词库」选 <code>单词,释义</code> 或 <code>单词[TAB]释义</code> 的 UTF-8 文件</td>
+      </tr>
+      <tr>
+        <td>3</td><td>计时训练跑一局</td>
+        <td>7 题、每题 10 秒倒计时，答错/超时自动进生词本，结束出成绩</td>
+        <td>闪退 → Logcat 看 FATAL；卡住 → 检查词库是否为空</td>
+      </tr>
+      <tr>
+        <td>4</td><td>截屏识词</td>
+        <td>在任意英文界面点按钮，1 秒内弹出结果卡片（带耗时 ms）</td>
+        <td>全黑 → 该界面有 FLAG_SECURE（无解）；没结果 → 看通知里的 preview 文本</td>
+      </tr>
+      <tr>
+        <td>5</td><td>单次耗时</td>
+        <td>记录 10 次取平均，填入下表「实测」列</td>
+        <td>—</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>五、耗时预期（现实版）</h2>
+  <div class="card">
+    <table>
+      <tr><th>环节</th><th>天玑 9400 预估</th><th>实测（自行填）</th></tr>
+      <tr><td>MediaProjection 抓一帧</td><td>80–200 ms</td><td></td></tr>
+      <tr><td>ML Kit 拉丁 OCR（全屏）</td><td>200–600 ms</td><td></td></tr>
+      <tr><td>本地 HashMap 查词</td><td>&lt; 1 ms</td><td></td></tr>
+      <tr><td>悬浮窗渲染</td><td>30–80 ms</td><td></td></tr>
+      <tr><td><b>合计</b></td><td><b>约 0.4–0.9 秒</b></td><td></td></tr>
+    </table>
+    <p style="color:var(--sub);font-size:13px;margin:10px 0 0">
+      优化空间：截屏后按题目区域裁剪（只 OCR 上半屏）、OCR 前把图缩到 1080 宽、ML Kit 只跑一次然后缓存 —— 都能再省 30%–50%。
+    </p>
+  </div>
+
+  <h2>六、词库（v1.1 已内置完整四级）</h2>
+  <div class="card">
+    <p style="margin:0 0 8px">APK 里已经打了 <b>4543 词</b>（去重后，带词性释义），来自开源仓库 <b>KyleBing/english-vocabulary</b> 的「3 四级-乱序.txt」，MIT 协议。</p>
+    <p style="margin:0 0 8px">想重新拉取或换成六级/考研，运行工程里的脚本即可（会覆盖 <code>assets/cet4.csv</code> 后重新编译）：</p>
+    <pre>python tools/fetch_cet4.py app/src/main/assets/cet4.csv</pre>
+    <p style="margin:8px 0 0;color:var(--sub);font-size:13px">备选词库（换源时改脚本里的文件名）：</p>
+    <ul>
+      <li><b>KyleBing/english-vocabulary</b>（GitHub）：四级约 7500 词，txt 格式 <code>单词[TAB]释义</code>，最省事。</li>
+      <li><b>cuttlin/Vocabulary-of-CET-4</b>：JSON / TXT，字段为 word / mean，需要自己转成两列。</li>
+      <li><b>wsxc452/english-vocabulary</b>：同样有四级乱序 txt（7508 词）。</li>
+    </ul>
+    <p style="margin:8px 0 0;color:var(--sub);font-size:13px">转换要求：每行 <code>单词,释义</code>，UTF-8，去掉表头。用 Excel 或一段 Python 都能搞定。</p>
+  </div>
+
+  <h2>七、v1.1 修掉的问题（代码复查结果）</h2>
+  <div class="card">
+    <table>
+      <tr><th>问题</th><th>影响</th><th>处理</th></tr>
+      <tr><td>截屏服务的 <code>consumed</code> 标志不重置</td><td class="warn">连续截屏第二次无反应（服务实例被复用）</td><td class="ok">每次 startCapture 前重置</td></tr>
+      <tr><td>全屏原图直送 OCR</td><td>2K 屏上 OCR 慢一倍以上</td><td class="ok">OCR 前把长边缩到 1600，原图仅用于回收</td></tr>
+      <tr><td>训练题干扰项可能与正确释义重复</td><td>出现两个"正确答案"，或占位文字「（干扰项）」</td><td class="ok">改为循环取词并去重</td></tr>
+      <tr><td>词库导入中途失败</td><td class="warn">半截文件导致词库加载异常</td><td class="ok">失败时删除目标文件，回落内置词库</td></tr>
+      <tr><td>冷启动直接进训练页</td><td>词库未加载完，误报"词库为空"并退出</td><td class="ok">改为等加载完成再开局</td></tr>
+      <tr><td>结果卡片 12 秒自动消失</td><td>来不及点"加入生词本"</td><td class="ok">延长到 20 秒</td></tr>
+      <tr><td>长单词顶出屏幕</td><td>训练页显示被截断</td><td class="ok">开启字号自适应（14–34sp）</td></tr>
+    </table>
+  </div>
+
+  <h2>八、识屏答题引擎（v1.2 新增）</h2>
+  <div class="card">
+    <p style="margin:0 0 10px">主界面第二个按钮「识屏答题引擎」进算法实验台。不插手机也能玩：粘贴题目文本或点内置示例，
+      就能看到<b>四个策略各自给每个选项打了多少分</b>、加权融合后选了谁、置信度多少。点「截屏答题」走完整实时链路。</p>
+    <table>
+      <tr><th>策略</th><th>权重</th><th>它在干什么</th></tr>
+      <tr><td>词典直查</td><td>0.45</td><td>题干单词 → 词库释义 → 与选项比字面重合（Jaccard），有包含关系给 0.85 保底</td></tr>
+      <tr><td>选项反查</td><td>0.25</td><td>题干是中文时，把每个选项当单词查词库，谁的释义最贴近题干谁就是答案</td></tr>
+      <tr><td>词形模糊</td><td>0.20</td><td>先做词形还原（复数/时态/比较级/副词）再查词库，抗屈折变化和 OCR 错字</td></tr>
+      <tr><td>离群排除</td><td>0.10</td><td>不看词库，只算每个选项与其余选项的"合群程度"，是排除法的量化版</td></tr>
+    </table>
+    <p style="margin:12px 0 0">融合方式：<code>final[i] = Σ(策略分 × 权重) / Σ权重</code>；
+      置信度 <code>= 0.6×最高分 + 0.4×(最高分−第二高分)</code>。
+      <b>安全阀</b>：四个策略都没在词库里找到实证时（多半是 OCR 把单词认错了），置信度直接打对折，
+      让它跨不过自动作答的 0.35 门槛 —— 宁可不答，也不乱点。</p>
+  </div>
+
+  <div class="card">
+    <span class="tag">离线仿真评测（不需要安卓机）</span>
+    <p style="margin:8px 0 0">把 Java 侧算法用 Python 原样复刻，直接读真词库造四选一题跑统计：</p>
+    <pre>python tools/sim_check.py 400 11 hard 0.3 short
+#        题数 种子 模式   OCR出错率 选项取单义项</pre>
+    <table style="margin-top:10px">
+      <tr><th>场景</th><th>总体准确率</th><th>敢答的部分</th><th>答错</th><th>放弃</th></tr>
+      <tr><td>OCR 正常（400 题）</td><td class="ok">98.2%</td><td>99.0%</td><td>4</td><td>3</td></tr>
+      <tr><td>OCR 30% 出错（400 题）</td><td>66.5%</td><td class="ok">99.3%</td><td>2</td><td>132</td></tr>
+    </table>
+    <p style="margin:10px 0 0;color:var(--sub);font-size:13px">
+      加安全阀之前：OCR 出错的 131 题里敢答 40 道、只对 17 道（等于乱猜）。<br>
+      加安全阀之后：那 131 题里只敢答 2 道且全对，答错总数从 27 降到 2。<br>
+      结论：<b>瓶颈不在算法，在 OCR 准不准</b>。想提高覆盖率，优先优化截屏清晰度（别缩太狠、按题目区域裁剪），
+      而不是去堆更多匹配策略。</p>
+  </div>
+
+  <div class="card">
+    <span class="tag">自动作答（可选，默认完全关闭）</span>
+    <p style="margin:8px 0 0">三重门槛，缺一不可，所以不动它的话它就是个摆设：</p>
+    <ol style="margin:6px 0 0 20px;padding:0">
+      <li>系统设置 → 无障碍 → 手动打开「词拍」（必须你自己开）；</li>
+      <li>实验台里的「总开关」，默认关；</li>
+      <li>目标 App 包名白名单，<b>默认为空</b> —— 不填任何界面都不会被点。</li>
+    </ol>
+    <p style="margin:10px 0 0">它用的是系统无障碍读屏接口（跟读屏软件、UI 自动化测试同一套），
+      拿的是屏幕文字，不注入、不 hook、不改内存。<br>
+      <span class="warn">别开在有真人对战的模式里</span>：对面是真人，机器抢答会毁掉对方体验，也违反平台规则会封号。
+      用在自己的练习、题库、自学内容上是另一回事。</p>
+  </div>
+
+  <h2>九、已知限制与不确定点</h2>
+  <div class="card">
+    <ul>
+      <li><b>不确定</b>：ML Kit 拉丁识别器首次调用有一次性模型加载（约几百 ms），之后常驻内存；这一步的实测值机型差异大，需要你在真机上量。</li>
+      <li><b>不确定</b>：OriginOS 对 MediaProjection 弹窗的复现策略（是否需要每次授权），vivo 机型表现可能与其他厂商不同。</li>
+      <li>带 <code>FLAG_SECURE</code> 的界面截图全黑，无解。</li>
+      <li>本应用<b>不</b>接入无障碍点击，也不具备在任何对战/考试中作答的能力 —— 这是设计上的取舍，不是技术做不到。</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+plugins {
+    id 'com.android.application'
+}
+
+// 正式签名配置：口令写在文件里仅用于本机个人项目，
+// wordsnap-release.jks 一旦丢失，以后无法给 App 做升级覆盖安装，请务必备份。
+def ksFile = rootProject.file("wordsnap-release.jks")
+
+android {
+    namespace 'com.litukang.wordsnap'
+    // 本机 SDK 装的是 API 36（D:\Android\Sdk\platforms\android-36），故 compileSdk 用 36
+    compileSdk 36
+
+    signingConfigs {
+        release {
+            storeFile ksFile
+            storePassword "ws2026apk"
+            keyAlias "wordsnap"
+            keyPassword "ws2026apk"
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.litukang.wordsnap"
+        minSdk 26
+        targetSdk 35
+        versionCode 3
+        versionName "1.2"
+
+        // 只打 arm64 一个架构：debug 包把 4 种 CPU 的 .so 全打进去，体积直接翻倍。
+        // 2018 年以后的安卓手机基本都是 arm64；若遇到装不上（极老的 32 位机），
+        // 把这行注释掉重打一个全架构包即可。
+        ndk { abiFilters 'arm64-v8a' }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // ML Kit 端侧文本识别（拉丁脚本，模型打进 APK，可完全离线）
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
+    // 如需识别中文界面上的英文以外的中文，可再加：
+    // implementation 'com.google.mlkit:text-recognition-chinese:16.0.1'
+}
