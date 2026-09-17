@@ -107,9 +107,26 @@ python tools/sim_check.py short    # 释义只取第一义项
 | compileSdk / targetSdk / minSdk | 36 / 35 / 26 |
 | NDK abiFilters | **arm64-v8a**（只打这一个架构，包才小） |
 
-```bash
-# 需要在 local.properties 里写 sdk.dir=（本机为 D:\Android\Sdk）
-gradlew assembleRelease
+> ⚠️ **本仓库没有 `gradlew`**（wrapper 的 jar 和脚本没提交）。
+> 请用本机已装好的 Gradle 8.9 直接编，**不要**去跑 `gradlew`——
+> wrapper 会联网下载 Gradle，国内常常直接超时。
+
+```powershell
+$proj = "<项目绝对路径>"
+Set-Location $proj
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot"
+& "F:\_tools\gradle-8.9\bin\gradle.bat" :app:assembleRelease --no-daemon
+# 产物：app\build\outputs\apk\release\app-release.apk
+
+# local.properties 必须存在，内容：
+#   sdk.dir=D\:\\Android\\Sdk
+```
+
+另外两个必须的配置（已写在 `gradle.properties` 里，换机器时别丢）：
+
+```properties
+android.overridePathCheck=true            # 工程路径含中文必须放行
+android.suppressUnsupportedCompileSdk=36  # AGP 8.7.3 官方只支持到 35
 ```
 
 **签名**：release 用项目里的 `wordsnap-release.jks`（别名 `wordsnap`）。
