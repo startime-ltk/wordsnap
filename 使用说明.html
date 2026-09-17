@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>词拍 WordSnap · 编译与实测说明 v1.1</title>
+<title>词拍 WordSnap · 编译与实测说明 v1.3</title>
 <style>
   :root{ --bg:#f6f7f9; --card:#fff; --line:#e3e6ea; --main:#1f2328; --sub:#6b7280; --blue:#1565c0; --green:#1b8a4b; --red:#c0392b; }
   *{box-sizing:border-box}
@@ -30,17 +30,20 @@
 <div class="wrap">
 
   <h1>词拍 WordSnap · 编译与实测说明</h1>
-  <div class="meta">版本 v1.2（release 正式签名包，含识屏答题引擎）&nbsp;|&nbsp; 2026-09-16 &nbsp;|&nbsp; 工程路径：<code>F:\workbuddy工作空间\2026-09-16-12-04-38\WordSnap</code></div>
+  <div class="meta">版本 v1.3（release 正式签名包，含识屏答题引擎 + App 内检查更新）&nbsp;|&nbsp; 2026-09-17 &nbsp;|&nbsp; 工程路径：<code>F:\workbuddy工作空间\2026-09-16-12-04-38\WordSnap</code></div>
 
   <div class="card">
     <span class="tag">已编译好的 APK</span>
     <p style="margin:8px 0 0">
-      <b>用这个：</b><code>WordSnap\词拍WordSnap-v1.2-答题引擎.apk</code>
+      <b>用这个：</b><code>WordSnap\词拍WordSnap-v1.3-检查更新.apk</code>
       —— <b>14.92 MB</b>，正式签名，只含 arm64 架构。<br>
       <b>手机下载直链（统一 APK 仓库 startime-ltk/apk）：</b>
-      <a href="https://github.com/startime-ltk/apk/releases/download/wordsnap-v1.2/WordSnap-v1.2.apk">https://github.com/startime-ltk/apk/releases/download/wordsnap-v1.2/WordSnap-v1.2.apk</a>
+      <a href="https://github.com/startime-ltk/apk/releases/download/wordsnap-v1.3/WordSnap-v1.3.apk">https://github.com/startime-ltk/apk/releases/download/wordsnap-v1.3/WordSnap-v1.3.apk</a>
+      <br><b>固定直链（收藏一次，永远指向最新版）：</b>
+      <a href="https://github.com/startime-ltk/apk/releases/download/wordsnap-latest/WordSnap-latest.apk">…/releases/download/wordsnap-latest/WordSnap-latest.apk</a>
       <br>手机上打开 GitHub App → 我的仓库 <code>apk</code> → 首页表格点「下载」，或进 Releases 点文件名。
-      SHA256 与本地包一致：<code>2b28dbba4ddf1861ef5f8c63f82745e336fd796444df2d100bb019ee904e87cb</code><br>
+      直链下不动时，在链接前加 <code>https://ghfast.top/</code> 走加速镜像。
+      SHA256 与本地包一致：<code>ef758b71335980e926ff8049b09a12c0f87eaec31ee3e155b0be551739bf2287</code><br>
       用 QQ / 微信文件传输助手传到手机，点开安装即可，不用开 Android Studio。<br>
       <span class="warn">注意</span>：如果这个手机上装过之前的 debug 版（44 MB 那个），<b>必须先卸载再装</b>——两个包签名不同，直接覆盖会失败。<br>
       装不上？vivo 会提示"未知来源"，在弹窗里点「继续安装 → 允许本次安装」，并在设置里给「允许安装未知应用」权限。
@@ -226,7 +229,26 @@
       用在自己的练习、题库、自学内容上是另一回事。</p>
   </div>
 
-  <h2>九、已知限制与不确定点</h2>
+  <h2>九、App 内检查更新（v1.3 新增）</h2>
+  <div class="card">
+    <p style="margin:0 0 10px">主界面标题下常驻一行「当前版本 vX.Y」，旁边一个「检查更新」按钮。
+      点它才会联网 —— 这是全 App <b>唯一的联网点</b>，平时完全离线。</p>
+    <ol style="margin:6px 0 0 20px;padding:0">
+      <li>先读统一仓库根目录的 <code>versions.json</code>（发布脚本每次发版自动刷新，格式最稳）；</li>
+      <li>读不到就退回解析 <code>wordsnap-latest</code> 那个 Release 说明里的「当前指向：<b>x.y</b>」；</li>
+      <li>版本号按点分段比大小（<code>1.10 &gt; 1.9</code>，不是字符串比较），真有新版才弹窗。</li>
+    </ol>
+    <p style="margin:12px 0 0">弹窗给三个选择：<b>加速下载</b>（ghfast 镜像）、<b>原链</b>、<b>稍后</b>。
+      它只把链接交给浏览器，<b>不自动下载、不自动安装</b>。</p>
+    <table style="margin-top:10px">
+      <tr><th>项</th><th>值</th></tr>
+      <tr><td>本版版本号</td><td>versionName <b>1.3</b> / versionCode <b>4</b>（v1.2 是 3，必须递增才能覆盖装）</td></tr>
+      <tr><td>新增权限</td><td><code>INTERNET</code> —— 只用于查版本号，不上传任何数据</td></tr>
+      <tr><td>相关代码</td><td><code>update/UpdateChecker.java</code> + <code>MainActivity</code> 里的「检查更新」按钮</td></tr>
+    </table>
+  </div>
+
+  <h2>十、已知限制与不确定点</h2>
   <div class="card">
     <ul>
       <li><b>不确定</b>：ML Kit 拉丁识别器首次调用有一次性模型加载（约几百 ms），之后常驻内存；这一步的实测值机型差异大，需要你在真机上量。</li>
