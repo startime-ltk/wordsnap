@@ -24,8 +24,8 @@ android {
         applicationId "com.litukang.wordsnap"
         minSdk 26
         targetSdk 35
-        versionCode 3
-        versionName "1.2"
+        versionCode 4
+        versionName "1.3"
 
         // 只打 arm64 一个架构：debug 包把 4 种 CPU 的 .so 全打进去，体积直接翻倍。
         // 2018 年以后的安卓手机基本都是 arm64；若遇到装不上（极老的 32 位机），

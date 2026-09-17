@@ -2,6 +2,7 @@ package com.litukang.wordsnap;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
@@ -22,6 +23,7 @@ import com.litukang.wordsnap.data.WordRepository;
 import com.litukang.wordsnap.ui.SolverActivity;
 import com.litukang.wordsnap.ui.TrainingActivity;
 import com.litukang.wordsnap.ui.WordBookActivity;
+import com.litukang.wordsnap.update.UpdateChecker;
 import com.litukang.wordsnap.util.Ui;
 
 import java.io.File;
@@ -42,6 +44,7 @@ public class MainActivity extends Activity {
     private TextView statusView;
     private TextView statView;
     private TextView bookView;
+    private TextView versionView;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -76,8 +79,12 @@ public class MainActivity extends Activity {
 
         TextView sub = Ui.text(this, "截屏 → 端侧 OCR → 本地词库查义，全程离线",
                 14f, Ui.TEXT_SUB, false);
-        sub.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 14));
+        sub.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 6));
         root.addView(sub);
+
+        versionView = Ui.text(this, "当前版本 v" + versionName(), 13f, Ui.TEXT_SUB, false);
+        versionView.setPadding(0, 0, 0, Ui.dp(this, 12));
+        root.addView(versionView);
 
         statusView = Ui.text(this, "词库：未加载", 15f, Ui.BLUE, true);
         root.addView(statusView);
@@ -104,6 +111,7 @@ public class MainActivity extends Activity {
             repo.loadAsync(this, (count, src) -> runOnUiThread(this::refresh));
         });
         root.addView(reload);
+        root.addView(Ui.button(this, "检查更新", v -> checkUpdate()));
 
         TextView tips = Ui.text(this,
                 "说明：\n"
@@ -132,6 +140,47 @@ public class MainActivity extends Activity {
         statView.setText(book.summary());
         int n = book.count();
         bookView.setText(n == 0 ? "生词本：空" : "生词本：" + n + " 词");
+    }
+
+    private String versionName() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            return "?";
+        }
+    }
+
+    /** 去安装包仓库问一句最新版是多少；有新版就弹窗给下载链接（不自动下载） */
+    private void checkUpdate() {
+        Toast.makeText(this, "正在检查更新…", Toast.LENGTH_SHORT).show();
+        UpdateChecker.check(versionName(), (latest, note) -> {
+            if (latest == null) {
+                Toast.makeText(this, note, Toast.LENGTH_LONG).show();
+                return;
+            }
+            versionView.setText("当前版本 v" + versionName() + "　·　最新版本 v" + latest);
+            if (!UpdateChecker.isNewer(latest, versionName())) {
+                Toast.makeText(this, "已经是最新版 v" + versionName(), Toast.LENGTH_SHORT).show();
+                return;
+            }
+            final String link = UpdateChecker.fastUrl();
+            new AlertDialog.Builder(this)
+                    .setTitle("发现新版本 v" + latest)
+                    .setMessage("新包和现在这个用同一张签名证书，可以直接覆盖安装，不用卸载。\n\n"
+                            + "加速链接走国内镜像，校园网下更快。")
+                    .setPositiveButton("加速下载", (d, w) -> openUrl(link))
+                    .setNeutralButton("原链", (d, w) -> openUrl(UpdateChecker.APK_LATEST))
+                    .setNegativeButton("稍后", null)
+                    .show();
+        });
+    }
+
+    private void openUrl(String url) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        } catch (Exception e) {
+            Toast.makeText(this, "没装浏览器，链接：" + url, Toast.LENGTH_LONG).show();
+        }
     }
 
     private void askNotificationPermission() {

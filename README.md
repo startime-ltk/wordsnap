@@ -63,12 +63,13 @@ app/src/main/java/com/litukang/wordsnap/
 │   ├── WordRepository.java        cet4.csv 载入 + 词形变体
 │   ├── WordBookStore.java         生词本
 │   └── AllowList.java             自动作答开关 + 包名白名单
-└── ui/
+├── ui/
     ├── SolverActivity.java        ★ 算法实验台（输入题干，看每路策略打分明细）
     ├── QuizOverlay.java           顶部悬浮答案卡
     ├── TrainingActivity.java      计时训练
     ├── WordBookActivity.java      生词本
     └── FloatingResult.java / ResultActivity.java / util/Ui.java
+└── update/UpdateChecker.java      App 内「检查更新」（读仓库 versions.json，唯一联网点）
 
 app/src/main/assets/cet4.csv      四级词库（含词形变体，145 KB）
 tools/                            离线评测脚本（Python 复刻 Java 算法，无需真机）
@@ -143,5 +144,22 @@ android.suppressUnsupportedCompileSdk=36  # AGP 8.7.3 官方只支持到 35
 
 | 版本 | 说明 |
 | --- | --- |
+| v1.3 | App 内「检查更新」：主页显示当前版本，一键查询最新版并给下载链接（只读，不自动下载）；14.92 MB，versionCode 4 |
 | v1.2 | 识屏答题引擎（四策略融合 + 安全阀 + 算法实验台）；14.92 MB，versionCode 3 |
 | v1.1 | 截屏识词、生词本、计时训练；首次 release 瘦身（44 MB → 15 MB） |
+
+## 八、App 内「检查更新」怎么工作
+
+主页标题下常驻一行「当前版本 vX.Y」，点「检查更新」才联网——这是全 App **唯一的联网点**，
+其余功能（OCR 识别、查词、训练）完全离线。
+
+取版本号的顺序：
+
+1. 先读仓库根目录的 `versions.json`（发布脚本每次发版自动刷新，格式最稳）；
+2. 读不到就退回解析 `wordsnap-latest` 这个 Release 说明里的「当前指向：**x.y**」；
+3. 版本号按点分段比大小（`1.10 > 1.9`，不是字符串比较），只有真的更新才弹窗，
+   弹窗给「加速下载 / 原链 / 稍后」三个选择，**不会自动下载安装**。
+
+发布侧的两处配套（都在 `F:\_tools\publish_apk.py`）：发版时刷新 `versions.json`；
+并且对已存在的 `<app>-latest` Release 补一次 PATCH——否则它的说明会永远停在上一个版本。
+
